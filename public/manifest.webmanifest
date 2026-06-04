@@ -1,0 +1,17 @@
+{
+  "name": "Baby Schedule",
+  "short_name": "Baby",
+  "description": "우리 가족 아기 스케줄 관리 웹앱",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#fffaf4",
+  "theme_color": "#f7c6b8",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
