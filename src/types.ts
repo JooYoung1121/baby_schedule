@@ -67,6 +67,33 @@ export interface ResearchItem {
   createdAt: string;
 }
 
+export interface CuratedCard {
+  id: string;
+  label: string;
+  title: string;
+  summary: string;
+  sourceLabel: string;
+  url: string;
+}
+
+export interface FoodCandidate {
+  id: string;
+  name: string;
+  timing: string;
+  reason: string;
+  caution: string;
+}
+
+export interface BrandCandidate {
+  id: string;
+  name: string;
+  fit: string;
+  why: string;
+  check: string;
+  sourceLabel: string;
+  url: string;
+}
+
 export interface BabyState {
   profile: BabyProfile;
   schedule: ScheduleEntry[];

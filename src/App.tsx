@@ -10,6 +10,7 @@ import {
   Clock,
   Download,
   Droplets,
+  ExternalLink,
   Home,
   MapPin,
   Milk,
@@ -28,12 +29,22 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import { monthGuides, readinessItems } from "./data";
+import {
+  babyFoodBrandCandidates,
+  explorationPicks,
+  firstFoodCandidates,
+  monthGuides,
+  readinessItems,
+  solidGuideCards,
+} from "./data";
 import { loadState, normalizeState, saveState } from "./storage";
 import type {
   ActivityType,
   BabyState,
+  BrandCandidate,
+  CuratedCard,
   DiaperType,
+  FoodCandidate,
   FoodTrial,
   ReactionLevel,
   ResearchCategory,
@@ -123,6 +134,14 @@ const researchStatusLabels: Record<ResearchStatus, string> = {
 };
 
 const researchCategories: ResearchCategory[] = ["개월수", "여행", "놀이", "건강", "쇼핑", "기타"];
+
+function categoryFromCuratedLabel(label: string): ResearchCategory {
+  if (label.includes("외출") || label.includes("서울")) return "여행";
+  if (label.includes("놀이")) return "놀이";
+  if (label.includes("구매")) return "쇼핑";
+  if (label.includes("주의") || label.includes("기준")) return "건강";
+  return "개월수";
+}
 
 function getDaySummary(entries: ScheduleEntry[]) {
   const milk = entries.filter((entry) => entry.type === "milk");
@@ -729,6 +748,45 @@ function FoodsView({
         </div>
       </section>
 
+      <section className="surface">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">Curated</p>
+            <h2>제가 찾아둔 이유식 기준</h2>
+          </div>
+          <Search size={24} />
+        </div>
+        <p className="muted block-copy">
+          기준 자료는 안전한 출발선을 잡기 위한 용도입니다. 시작 시점, 알레르기, 아토피, 체중 증가가 걱정되는 경우에는 소아과 기준을 우선으로 잡습니다.
+        </p>
+        <CuratedCardGrid items={solidGuideCards} />
+      </section>
+
+      <section className="surface">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">First Foods</p>
+            <h2>첫 재료 후보</h2>
+          </div>
+          <Apple size={24} />
+        </div>
+        <FoodCandidateGrid items={firstFoodCandidates} />
+      </section>
+
+      <section className="surface">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">Brand Shortlist</p>
+            <h2>시판 이유식 후보</h2>
+          </div>
+          <ShoppingCart size={24} />
+        </div>
+        <p className="muted block-copy">
+          특정 브랜드가 절대적으로 좋다는 뜻은 아니고, 월령 단계·배송·원재료·체험팩을 비교하기 좋은 후보입니다.
+        </p>
+        <BrandCandidateGrid items={babyFoodBrandCandidates} />
+      </section>
+
       <FoodForm onAddFood={addFood} />
 
       <section className="surface">
@@ -1058,6 +1116,28 @@ function IdeasView({
         </div>
       </section>
 
+      <section className="surface">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">Found For Us</p>
+            <h2>제가 찾아둔 탐색 큐레이션</h2>
+          </div>
+          <Search size={24} />
+        </div>
+        <CuratedCardGrid
+          items={explorationPicks}
+          onSave={(item) =>
+            addResearch({
+              title: item.title,
+              category: categoryFromCuratedLabel(item.label),
+              status: "saved",
+              url: item.url,
+              note: item.summary,
+            })
+          }
+        />
+      </section>
+
       <ResearchForm onAddResearch={addResearch} />
 
       <section className="surface">
@@ -1282,6 +1362,67 @@ function DataView({
           </div>
         </div>
       </section>
+    </div>
+  );
+}
+
+function CuratedCardGrid({ items, onSave }: { items: CuratedCard[]; onSave?: (item: CuratedCard) => void }) {
+  return (
+    <div className="curation-grid">
+      {items.map((item) => (
+        <article key={item.id} className="curation-card">
+          <span className="status-chip blue">{item.label}</span>
+          <strong>{item.title}</strong>
+          <p>{item.summary}</p>
+          <div className="source-row">
+            <a href={item.url} target="_blank" rel="noreferrer">
+              <ExternalLink size={15} />
+              {item.sourceLabel}
+            </a>
+            {onSave && (
+              <button className="secondary-button compact-button" type="button" onClick={() => onSave(item)}>
+                저장
+              </button>
+            )}
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function FoodCandidateGrid({ items }: { items: FoodCandidate[] }) {
+  return (
+    <div className="candidate-grid">
+      {items.map((item) => (
+        <article key={item.id} className="candidate-card">
+          <span>{item.timing}</span>
+          <strong>{item.name}</strong>
+          <p>{item.reason}</p>
+          <small>{item.caution}</small>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function BrandCandidateGrid({ items }: { items: BrandCandidate[] }) {
+  return (
+    <div className="brand-grid">
+      {items.map((item) => (
+        <article key={item.id} className="brand-card">
+          <div className="item-title">
+            <strong>{item.name}</strong>
+            <span className="status-chip">{item.fit}</span>
+          </div>
+          <p>{item.why}</p>
+          <small>{item.check}</small>
+          <a href={item.url} target="_blank" rel="noreferrer">
+            <ExternalLink size={15} />
+            {item.sourceLabel}
+          </a>
+        </article>
+      ))}
     </div>
   );
 }

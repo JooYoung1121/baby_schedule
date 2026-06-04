@@ -660,6 +660,78 @@ textarea:focus {
   line-height: 1.45;
 }
 
+.curation-grid,
+.candidate-grid,
+.brand-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.curation-card,
+.candidate-card,
+.brand-card {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdf9;
+  padding: 14px;
+}
+
+.curation-card strong,
+.candidate-card strong,
+.brand-card strong {
+  line-height: 1.35;
+}
+
+.curation-card p,
+.candidate-card p,
+.brand-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.candidate-card span {
+  color: var(--rose-strong);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.candidate-card small,
+.brand-card small {
+  display: block;
+  border-radius: 8px;
+  background: #f5efe8;
+  color: #6a5d55;
+  padding: 9px 10px;
+  line-height: 1.45;
+}
+
+.source-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.curation-card a,
+.brand-card a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 900;
+}
+
+.compact-button {
+  min-height: 34px;
+  padding: 0 11px;
+}
+
 .deploy-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -834,6 +906,9 @@ textarea:focus {
 
   .summary-grid,
   .guide-grid,
+  .curation-grid,
+  .candidate-grid,
+  .brand-grid,
   .check-grid,
   .deploy-grid,
   .form-grid {
