@@ -3,6 +3,7 @@ import {
   Apple,
   Baby,
   CalendarDays,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   CircleCheck,
@@ -19,6 +20,7 @@ import {
   PackageCheck,
   Pill,
   Plus,
+  Save,
   Search,
   Settings,
   ShoppingCart,
@@ -28,7 +30,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import {
   babyFoodBrandCandidates,
   explorationPicks,
@@ -89,7 +91,7 @@ const tabs: Array<{ id: TabId; label: string; Icon: LucideIcon }> = [
   { id: "today", label: "오늘", Icon: Home },
   { id: "foods", label: "이유식", Icon: Utensils },
   { id: "supplies", label: "물품", Icon: ShoppingCart },
-  { id: "ideas", label: "탐색", Icon: Search },
+  { id: "ideas", label: "정보", Icon: Search },
   { id: "data", label: "관리", Icon: Settings },
 ];
 
@@ -234,6 +236,32 @@ function App() {
     setToast(`${activityConfig[nextEntry.type].label} 기록을 추가했어요.`);
   }
 
+  function addQuickScheduleEntry(type: ActivityType) {
+    const config = activityConfig[type];
+    const lastSameType = getLastEntry(state.schedule, type);
+    const amount = type === "milk" || type === "solid" ? lastSameType?.amount : undefined;
+    const unit = amount ? lastSameType?.unit ?? config.unit : undefined;
+
+    addScheduleEntry({
+      type,
+      startedAt: new Date().toISOString(),
+      title: config.defaultTitle,
+      amount,
+      unit,
+      diaper: type === "diaper" ? "wet" : undefined,
+      sleepQuality: type === "sleep" ? "normal" : undefined,
+    });
+  }
+
+  function updateScheduleEntry(id: string, entry: Omit<ScheduleEntry, "id">) {
+    updateState((previous) => ({
+      ...previous,
+      schedule: previous.schedule.map((item) => (item.id === id ? { ...entry, id } : item)),
+    }));
+    setSelectedDate(localDateFromIso(entry.startedAt));
+    setToast("기록을 수정했어요.");
+  }
+
   function deleteScheduleEntry(id: string) {
     updateState((previous) => ({
       ...previous,
@@ -299,7 +327,7 @@ function App() {
       ...previous,
       research: [{ ...item, id: createId("research"), createdAt: new Date().toISOString() }, ...previous.research],
     }));
-    setToast("탐색 주제를 추가했어요.");
+    setToast("정보 주제를 추가했어요.");
   }
 
   function updateResearchStatus(id: string, status: ResearchStatus) {
@@ -397,6 +425,8 @@ function App() {
               quickType={quickType}
               setQuickType={setQuickType}
               onAddEntry={addScheduleEntry}
+              onQuickAdd={addQuickScheduleEntry}
+              onUpdateEntry={updateScheduleEntry}
               onDeleteEntry={deleteScheduleEntry}
             />
           )}
@@ -466,6 +496,8 @@ interface TodayViewProps {
   quickType: ActivityType | null;
   setQuickType: (type: ActivityType | null) => void;
   onAddEntry: (entry: Omit<ScheduleEntry, "id">) => void;
+  onQuickAdd: (type: ActivityType) => void;
+  onUpdateEntry: (id: string, entry: Omit<ScheduleEntry, "id">) => void;
   onDeleteEntry: (id: string) => void;
 }
 
@@ -479,6 +511,8 @@ function TodayView({
   quickType,
   setQuickType,
   onAddEntry,
+  onQuickAdd,
+  onUpdateEntry,
   onDeleteEntry,
 }: TodayViewProps) {
   return (
@@ -502,17 +536,43 @@ function TodayView({
         </div>
       </section>
 
-      <section className="quick-grid" aria-label="빠른 기록">
-        {(Object.keys(activityConfig) as ActivityType[]).map((type) => {
-          const config = activityConfig[type];
-          const Icon = config.Icon;
-          return (
-            <button key={type} className={`quick-card ${config.tone}`} type="button" onClick={() => setQuickType(type)}>
-              <Icon size={22} />
-              <span>{config.label}</span>
-            </button>
-          );
-        })}
+      <section className="surface quick-log-panel">
+        <div className="section-heading compact-heading">
+          <div>
+            <p className="eyebrow">Quick Log</p>
+            <h2>눌러서 바로 기록</h2>
+          </div>
+          <button className="secondary-button compact-button" type="button" onClick={() => setQuickType(quickType ? null : "milk")}>
+            세부 입력
+          </button>
+        </div>
+        <div className="quick-grid" aria-label="빠른 기록">
+          {(Object.keys(activityConfig) as ActivityType[]).map((type) => {
+            const config = activityConfig[type];
+            const Icon = config.Icon;
+            return (
+              <button key={type} className={`quick-card ${config.tone}`} type="button" onClick={() => onQuickAdd(type)}>
+                <Icon size={22} />
+                <span>{config.label}</span>
+                <small>바로 등록</small>
+              </button>
+            );
+          })}
+        </div>
+        {quickType && (
+          <div className="detail-type-row" aria-label="세부 입력 종류">
+            {(Object.keys(activityConfig) as ActivityType[]).map((type) => (
+              <button
+                key={type}
+                className={quickType === type ? "active" : ""}
+                type="button"
+                onClick={() => setQuickType(type)}
+              >
+                {activityConfig[type].label}
+              </button>
+            ))}
+          </div>
+        )}
       </section>
 
       {quickType && (
@@ -553,7 +613,12 @@ function TodayView({
         ) : (
           <div className="timeline">
             {dayEntries.map((entry) => (
-              <TimelineItem key={entry.id} entry={entry} onDelete={() => onDeleteEntry(entry.id)} />
+              <TimelineItem
+                key={entry.id}
+                entry={entry}
+                onUpdate={(nextEntry) => onUpdateEntry(entry.id, nextEntry)}
+                onDelete={() => onDeleteEntry(entry.id)}
+              />
             ))}
           </div>
         )}
@@ -696,7 +761,15 @@ function SummaryTile({ icon: Icon, label, value, detail }: { icon: LucideIcon; l
   );
 }
 
-function TimelineItem({ entry, onDelete }: { entry: ScheduleEntry; onDelete: () => void }) {
+function TimelineItem({
+  entry,
+  onUpdate,
+  onDelete,
+}: {
+  entry: ScheduleEntry;
+  onUpdate: (entry: Omit<ScheduleEntry, "id">) => void;
+  onDelete: () => void;
+}) {
   const config = activityConfig[entry.type];
   const Icon = config.Icon;
   const duration = entry.endedAt ? minutesBetween(entry.startedAt, entry.endedAt) : 0;
@@ -724,8 +797,165 @@ function TimelineItem({ entry, onDelete }: { entry: ScheduleEntry; onDelete: () 
           {entry.sleepQuality ? <span>{sleepQualityLabels[entry.sleepQuality]}</span> : null}
         </div>
         {entry.note && <p>{entry.note}</p>}
+        <details className="inline-disclosure">
+          <summary>
+            <span>수정/메모</span>
+            <ChevronDown size={16} />
+          </summary>
+          <TimelineEditForm entry={entry} onUpdate={onUpdate} />
+        </details>
       </div>
     </article>
+  );
+}
+
+function TimelineEditForm({
+  entry,
+  onUpdate,
+}: {
+  entry: ScheduleEntry;
+  onUpdate: (entry: Omit<ScheduleEntry, "id">) => void;
+}) {
+  const config = activityConfig[entry.type];
+  const [title, setTitle] = useState(entry.title);
+  const [startedAt, setStartedAt] = useState(toDateTimeInputValue(new Date(entry.startedAt)));
+  const [endedAt, setEndedAt] = useState(entry.endedAt ? toDateTimeInputValue(new Date(entry.endedAt)) : "");
+  const [amount, setAmount] = useState(entry.amount ? String(entry.amount) : "");
+  const [unit, setUnit] = useState(entry.unit ?? config.unit ?? "");
+  const [diaper, setDiaper] = useState<DiaperType>(entry.diaper ?? "wet");
+  const [sleepQuality, setSleepQuality] = useState<SleepQuality>(entry.sleepQuality ?? "normal");
+  const [note, setNote] = useState(entry.note ?? "");
+
+  useEffect(() => {
+    setTitle(entry.title);
+    setStartedAt(toDateTimeInputValue(new Date(entry.startedAt)));
+    setEndedAt(entry.endedAt ? toDateTimeInputValue(new Date(entry.endedAt)) : "");
+    setAmount(entry.amount ? String(entry.amount) : "");
+    setUnit(entry.unit ?? config.unit ?? "");
+    setDiaper(entry.diaper ?? "wet");
+    setSleepQuality(entry.sleepQuality ?? "normal");
+    setNote(entry.note ?? "");
+  }, [config.unit, entry]);
+
+  function handleSubmit(event: FormEvent) {
+    event.preventDefault();
+    const numericAmount = Number.parseFloat(amount);
+    onUpdate({
+      type: entry.type,
+      startedAt: isoFromDateTimeInput(startedAt),
+      endedAt: endedAt ? isoFromDateTimeInput(endedAt) : undefined,
+      title: title.trim() || config.defaultTitle,
+      amount: Number.isFinite(numericAmount) ? numericAmount : undefined,
+      unit: Number.isFinite(numericAmount) && unit ? unit : undefined,
+      diaper: entry.type === "diaper" ? diaper : undefined,
+      sleepQuality: entry.type === "sleep" ? sleepQuality : undefined,
+      note: note.trim() || undefined,
+    });
+  }
+
+  return (
+    <form className="mini-form" onSubmit={handleSubmit}>
+      <label>
+        <span>이름</span>
+        <input value={title} onChange={(event) => setTitle(event.target.value)} />
+      </label>
+      <label>
+        <span>시작</span>
+        <input type="datetime-local" value={startedAt} onChange={(event) => setStartedAt(event.target.value)} />
+      </label>
+      {entry.type === "sleep" && (
+        <>
+          <label>
+            <span>종료</span>
+            <input type="datetime-local" value={endedAt} onChange={(event) => setEndedAt(event.target.value)} />
+          </label>
+          <label>
+            <span>상태</span>
+            <select value={sleepQuality} onChange={(event) => setSleepQuality(event.target.value as SleepQuality)}>
+              {Object.entries(sleepQualityLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </>
+      )}
+      {(entry.type === "milk" || entry.type === "solid" || entry.type === "medicine") && (
+        <div className="inline-fields">
+          <label>
+            <span>양</span>
+            <input inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} />
+          </label>
+          <label>
+            <span>단위</span>
+            <input value={unit} onChange={(event) => setUnit(event.target.value)} />
+          </label>
+        </div>
+      )}
+      {entry.type === "diaper" && (
+        <label>
+          <span>종류</span>
+          <select value={diaper} onChange={(event) => setDiaper(event.target.value as DiaperType)}>
+            {Object.entries(diaperLabels).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      <label className="wide">
+        <span>메모</span>
+        <textarea value={note} onChange={(event) => setNote(event.target.value)} rows={2} />
+      </label>
+      <div className="form-actions">
+        <button className="primary-button compact-button" type="submit">
+          <Save size={16} />
+          저장
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function CollapsibleSection({
+  eyebrow,
+  title,
+  icon: Icon,
+  badge,
+  defaultOpen = false,
+  intro,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  icon?: LucideIcon;
+  badge?: string | number;
+  defaultOpen?: boolean;
+  intro?: string;
+  children: ReactNode;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <details className="surface collapsible-section" open={isOpen} onToggle={(event) => setIsOpen(event.currentTarget.open)}>
+      <summary className="collapsible-summary">
+        <div>
+          <p className="eyebrow">{eyebrow}</p>
+          <h2>{title}</h2>
+        </div>
+        <div className="summary-meta">
+          {badge !== undefined && <span className="count-badge">{badge}</span>}
+          {Icon && <Icon size={24} />}
+          <ChevronDown className="summary-chevron" size={18} />
+        </div>
+      </summary>
+      <div className="collapsible-body">
+        {intro && <p className="muted block-copy">{intro}</p>}
+        {children}
+      </div>
+    </details>
   );
 }
 
@@ -744,14 +974,7 @@ function FoodsView({
 }) {
   return (
     <div className="stack">
-      <section className="surface">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Solids</p>
-            <h2>이유식 준비</h2>
-          </div>
-          <Utensils size={24} />
-        </div>
+      <CollapsibleSection eyebrow="Solids" title="이유식 준비 체크" icon={Utensils} defaultOpen>
         <div className="check-grid">
           {readinessItems.map((item) => (
             <label key={item.id} className="check-row">
@@ -772,59 +995,37 @@ function FoodsView({
             </label>
           ))}
         </div>
-      </section>
+      </CollapsibleSection>
 
-      <section className="surface">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Curated</p>
-            <h2>제가 찾아둔 이유식 기준</h2>
-          </div>
-          <Search size={24} />
-        </div>
-        <p className="muted block-copy">
-          기준 자료는 안전한 출발선을 잡기 위한 용도입니다. 시작 시점, 알레르기, 아토피, 체중 증가가 걱정되는 경우에는 소아과 기준을 우선으로 잡습니다.
-        </p>
+      <CollapsibleSection
+        eyebrow="Curated"
+        title="이유식 기준 자료"
+        icon={Search}
+        intro="기준 자료는 안전한 출발선을 잡기 위한 용도입니다. 시작 시점, 알레르기, 아토피, 체중 증가가 걱정되는 경우에는 소아과 기준을 우선으로 잡습니다."
+      >
         <CuratedCardGrid items={solidGuideCards} />
-      </section>
+      </CollapsibleSection>
 
-      <section className="surface">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">First Foods</p>
-            <h2>첫 재료 후보</h2>
-          </div>
-          <Apple size={24} />
-        </div>
+      <CollapsibleSection eyebrow="First Foods" title="첫 재료 후보" icon={Apple}>
         <FoodCandidateGrid items={firstFoodCandidates} />
-      </section>
+      </CollapsibleSection>
 
-      <section className="surface">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Brand Shortlist</p>
-            <h2>시판 이유식 후보</h2>
-          </div>
-          <ShoppingCart size={24} />
-        </div>
-        <p className="muted block-copy">
-          특정 브랜드가 절대적으로 좋다는 뜻은 아니고, 월령 단계·배송·원재료·체험팩을 비교하기 좋은 후보입니다.
-        </p>
+      <CollapsibleSection
+        eyebrow="Brand Shortlist"
+        title="시판 이유식 후보"
+        icon={ShoppingCart}
+        intro="특정 브랜드가 절대적으로 좋다는 뜻은 아니고, 월령 단계·배송·원재료·체험팩을 비교하기 좋은 후보입니다."
+      >
         <BrandCandidateGrid items={babyFoodBrandCandidates} />
-      </section>
+      </CollapsibleSection>
 
       <VendorComparisonSection snapshot={vendorSnapshot} />
 
-      <FoodForm onAddFood={addFood} />
+      <CollapsibleSection eyebrow="Add Food" title="음식 추가" icon={Plus}>
+        <FoodForm onAddFood={addFood} />
+      </CollapsibleSection>
 
-      <section className="surface">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Food Log</p>
-            <h2>시도한 음식</h2>
-          </div>
-          <span className="count-badge">{state.foods.length}</span>
-        </div>
+      <CollapsibleSection eyebrow="Food Log" title="시도한 음식" badge={state.foods.length} defaultOpen>
         {state.foods.length === 0 ? (
           <EmptyState icon={Apple} title="첫 음식 기록을 기다리는 중" text="쌀미음, 오트밀, 채소처럼 한 번에 하나씩 기록해 보세요." />
         ) : (
@@ -846,7 +1047,7 @@ function FoodsView({
             ))}
           </div>
         )}
-      </section>
+      </CollapsibleSection>
     </div>
   );
 }
@@ -882,13 +1083,7 @@ function FoodForm({ onAddFood }: { onAddFood: (food: Omit<FoodTrial, "id">) => v
   }
 
   return (
-    <section className="surface">
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">Add Food</p>
-          <h2>음식 추가</h2>
-        </div>
-      </div>
+    <div className="embedded-form">
       <form className="form-grid" onSubmit={handleSubmit}>
         <label>
           <span>음식</span>
@@ -944,7 +1139,7 @@ function FoodForm({ onAddFood }: { onAddFood: (food: Omit<FoodTrial, "id">) => v
           </button>
         </div>
       </form>
-    </section>
+    </div>
   );
 }
 
@@ -960,37 +1155,85 @@ function SuppliesView({
   deleteSupply: (id: string) => void;
 }) {
   const neededCount = supplies.filter((item) => item.status === "needed" || item.status === "low").length;
+  const orderedCount = supplies.filter((item) => item.status === "ordered").length;
+  const stockedCount = supplies.filter((item) => item.status === "stocked" || item.status === "bought").length;
   const boughtTotal = supplies.reduce((sum, item) => sum + (item.status === "bought" ? item.price ?? 0 : 0), 0);
+  const urgentItems = supplies.filter((item) => item.status === "needed" || item.status === "low");
+  const orderedItems = supplies.filter((item) => item.status === "ordered");
+  const stockedItems = supplies.filter((item) => item.status === "stocked" || item.status === "bought");
 
   return (
     <div className="stack">
       <section className="summary-grid">
         <SummaryTile icon={ClipboardList} label="필요/부족" value={`${neededCount}개`} detail="우선 확인" />
-        <SummaryTile icon={PackageCheck} label="구매완료" value={currency(boughtTotal) || "0원"} detail="입력된 비용 합계" />
+        <SummaryTile icon={ShoppingCart} label="주문중" value={`${orderedCount}개`} detail="도착 확인" />
+        <SummaryTile icon={PackageCheck} label="보유/완료" value={`${stockedCount}개`} detail={currency(boughtTotal) || "구매비 미기록"} />
       </section>
 
-      <SupplyForm onAddSupply={addSupply} />
+      <CollapsibleSection eyebrow="Add Item" title="물품 빠른 추가" icon={Plus} defaultOpen={supplies.length === 0}>
+        <SupplyForm onAddSupply={addSupply} />
+      </CollapsibleSection>
 
-      <section className="surface">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Inventory</p>
-            <h2>물품 목록</h2>
-          </div>
-          <span className="count-badge">{supplies.length}</span>
-        </div>
-        <div className="list">
-          {supplies.map((item) => (
-            <article key={item.id} className="list-item">
+      <SupplyBucket
+        title="필요하거나 부족한 것"
+        items={urgentItems}
+        defaultOpen
+        emptyText="지금 급한 물품은 없어요."
+        updateSupplyStatus={updateSupplyStatus}
+        deleteSupply={deleteSupply}
+      />
+      <SupplyBucket
+        title="주문하고 기다리는 것"
+        items={orderedItems}
+        emptyText="배송 대기 중인 물품이 없어요."
+        updateSupplyStatus={updateSupplyStatus}
+        deleteSupply={deleteSupply}
+      />
+      <SupplyBucket
+        title="보유/구매완료 기록"
+        items={stockedItems}
+        emptyText="보유 물품 기록이 아직 없어요."
+        updateSupplyStatus={updateSupplyStatus}
+        deleteSupply={deleteSupply}
+      />
+    </div>
+  );
+}
+
+function SupplyBucket({
+  title,
+  items,
+  defaultOpen = false,
+  emptyText,
+  updateSupplyStatus,
+  deleteSupply,
+}: {
+  title: string;
+  items: SupplyItem[];
+  defaultOpen?: boolean;
+  emptyText: string;
+  updateSupplyStatus: (id: string, status: SupplyStatus) => void;
+  deleteSupply: (id: string) => void;
+}) {
+  return (
+    <CollapsibleSection eyebrow="Inventory" title={title} badge={items.length} defaultOpen={defaultOpen}>
+      {items.length === 0 ? (
+        <EmptyState icon={PackageCheck} title={emptyText} text="필요해지면 위에서 물품을 추가해 두면 됩니다." />
+      ) : (
+        <div className="list compact-list">
+          {items.map((item) => (
+            <article key={item.id} className="list-item supply-item">
               <div>
                 <div className="item-title">
                   <strong>{item.name}</strong>
                   <span className={`status-chip ${item.status}`}>{supplyStatusLabels[item.status]}</span>
                 </div>
-                <p>{item.category} · {item.quantity || "수량 미정"}{item.shop ? ` · ${item.shop}` : ""}</p>
-                <p className="muted">
-                  {[item.targetDate ? `목표 ${item.targetDate}` : "", currency(item.price), item.note].filter(Boolean).join(" · ")}
-                </p>
+                <p>{[item.category, item.quantity || "수량 미정", item.shop].filter(Boolean).join(" · ")}</p>
+                {(item.targetDate || item.price || item.note) && (
+                  <p className="muted">
+                    {[item.targetDate ? `목표 ${item.targetDate}` : "", currency(item.price), item.note].filter(Boolean).join(" · ")}
+                  </p>
+                )}
               </div>
               <div className="item-actions">
                 <select value={item.status} onChange={(event) => updateSupplyStatus(item.id, event.target.value as SupplyStatus)}>
@@ -1007,8 +1250,8 @@ function SuppliesView({
             </article>
           ))}
         </div>
-      </section>
-    </div>
+      )}
+    </CollapsibleSection>
   );
 }
 
@@ -1044,13 +1287,7 @@ function SupplyForm({ onAddSupply }: { onAddSupply: (item: Omit<SupplyItem, "id"
   }
 
   return (
-    <section className="surface">
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">Add Item</p>
-          <h2>물품 추가</h2>
-        </div>
-      </div>
+    <div className="embedded-form">
       <form className="form-grid" onSubmit={handleSubmit}>
         <label>
           <span>물품</span>
@@ -1070,26 +1307,34 @@ function SupplyForm({ onAddSupply }: { onAddSupply: (item: Omit<SupplyItem, "id"
             ))}
           </select>
         </label>
-        <label>
-          <span>수량</span>
-          <input value={quantity} onChange={(event) => setQuantity(event.target.value)} placeholder="예: 3개" />
-        </label>
-        <label>
-          <span>목표일</span>
-          <input type="date" value={targetDate} onChange={(event) => setTargetDate(event.target.value)} />
-        </label>
-        <label>
-          <span>금액</span>
-          <input inputMode="numeric" value={price} onChange={(event) => setPrice(event.target.value)} placeholder="원" />
-        </label>
-        <label>
-          <span>구매처</span>
-          <input value={shop} onChange={(event) => setShop(event.target.value)} placeholder="쿠팡, 당근, 매장" />
-        </label>
-        <label className="wide">
-          <span>메모</span>
-          <textarea value={note} onChange={(event) => setNote(event.target.value)} rows={3} />
-        </label>
+        <details className="inline-disclosure wide">
+          <summary>
+            <span>수량/금액/메모</span>
+            <ChevronDown size={16} />
+          </summary>
+          <div className="mini-form">
+            <label>
+              <span>수량</span>
+              <input value={quantity} onChange={(event) => setQuantity(event.target.value)} placeholder="예: 3개" />
+            </label>
+            <label>
+              <span>목표일</span>
+              <input type="date" value={targetDate} onChange={(event) => setTargetDate(event.target.value)} />
+            </label>
+            <label>
+              <span>금액</span>
+              <input inputMode="numeric" value={price} onChange={(event) => setPrice(event.target.value)} placeholder="원" />
+            </label>
+            <label>
+              <span>구매처</span>
+              <input value={shop} onChange={(event) => setShop(event.target.value)} placeholder="쿠팡, 당근, 매장" />
+            </label>
+            <label className="wide">
+              <span>메모</span>
+              <textarea value={note} onChange={(event) => setNote(event.target.value)} rows={3} />
+            </label>
+          </div>
+        </details>
         <div className="form-actions">
           <button className="primary-button" type="submit">
             <Plus size={18} />
@@ -1097,7 +1342,7 @@ function SupplyForm({ onAddSupply }: { onAddSupply: (item: Omit<SupplyItem, "id"
           </button>
         </div>
       </form>
-    </section>
+    </div>
   );
 }
 
@@ -1129,29 +1374,39 @@ function IdeasView({
           </div>
           <MapPin size={24} />
         </div>
-        <div className="guide-grid">
-          {monthGuides.map((guide) => (
-            <article key={guide.range} className={guide === currentGuide ? "guide-card current" : "guide-card"}>
-              <span>{guide.range}</span>
-              <strong>{guide.title}</strong>
-              <ul>
-                {guide.points.map((point) => (
-                  <li key={point}>{point}</li>
-                ))}
-              </ul>
-            </article>
-          ))}
-        </div>
+        {currentGuide && (
+          <article className="guide-card current guide-card-focus">
+            <span>{currentGuide.range}</span>
+            <strong>{currentGuide.title}</strong>
+            <ul>
+              {currentGuide.points.map((point) => (
+                <li key={point}>{point}</li>
+              ))}
+            </ul>
+          </article>
+        )}
+        <details className="inline-disclosure">
+          <summary>
+            <span>전체 개월수 보기</span>
+            <ChevronDown size={16} />
+          </summary>
+          <div className="guide-grid">
+            {monthGuides.map((guide) => (
+              <article key={guide.range} className={guide === currentGuide ? "guide-card current" : "guide-card"}>
+                <span>{guide.range}</span>
+                <strong>{guide.title}</strong>
+                <ul>
+                  {guide.points.map((point) => (
+                    <li key={point}>{point}</li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
+        </details>
       </section>
 
-      <section className="surface">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Found For Us</p>
-            <h2>제가 찾아둔 탐색 큐레이션</h2>
-          </div>
-          <Search size={24} />
-        </div>
+      <CollapsibleSection eyebrow="Found For Us" title="월령/외출/놀이 정보" icon={Search} defaultOpen>
         <CuratedCardGrid
           items={explorationPicks}
           onSave={(item) =>
@@ -1164,49 +1419,48 @@ function IdeasView({
             })
           }
         />
-      </section>
+      </CollapsibleSection>
 
-      <ResearchForm onAddResearch={addResearch} />
+      <CollapsibleSection eyebrow="Add Topic" title="찾아볼 주제 추가" icon={Plus}>
+        <ResearchForm onAddResearch={addResearch} />
+      </CollapsibleSection>
 
-      <section className="surface">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Research Board</p>
-            <h2>검색/정리 목록</h2>
-          </div>
-          <span className="count-badge">{research.length}</span>
-        </div>
-        <div className="list">
-          {research.map((item) => (
-            <article key={item.id} className="list-item">
-              <div>
-                <div className="item-title">
-                  <strong>{item.title}</strong>
-                  <span className="status-chip blue">{item.category}</span>
+      <CollapsibleSection eyebrow="Research Board" title="저장한 정보 목록" badge={research.length} defaultOpen>
+        {research.length === 0 ? (
+          <EmptyState icon={Search} title="저장한 정보가 없어요" text="위 정보 카드에서 저장하거나 찾아볼 주제를 추가해 보세요." />
+        ) : (
+          <div className="list">
+            {research.map((item) => (
+              <article key={item.id} className="list-item">
+                <div>
+                  <div className="item-title">
+                    <strong>{item.title}</strong>
+                    <span className="status-chip blue">{item.category}</span>
+                  </div>
+                  <p className="muted">{item.note || "메모 없음"}</p>
+                  {item.url && (
+                    <a href={item.url} target="_blank" rel="noreferrer">
+                      {item.url}
+                    </a>
+                  )}
                 </div>
-                <p className="muted">{item.note || "메모 없음"}</p>
-                {item.url && (
-                  <a href={item.url} target="_blank" rel="noreferrer">
-                    {item.url}
-                  </a>
-                )}
-              </div>
-              <div className="item-actions">
-                <select value={item.status} onChange={(event) => updateResearchStatus(item.id, event.target.value as ResearchStatus)}>
-                  {Object.entries(researchStatusLabels).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-                <button className="icon-button danger" type="button" title="삭제" onClick={() => deleteResearch(item.id)}>
-                  <Trash2 size={17} />
-                </button>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+                <div className="item-actions">
+                  <select value={item.status} onChange={(event) => updateResearchStatus(item.id, event.target.value as ResearchStatus)}>
+                    {Object.entries(researchStatusLabels).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                  <button className="icon-button danger" type="button" title="삭제" onClick={() => deleteResearch(item.id)}>
+                    <Trash2 size={17} />
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </CollapsibleSection>
     </div>
   );
 }
@@ -1234,13 +1488,7 @@ function ResearchForm({ onAddResearch }: { onAddResearch: (item: Omit<ResearchIt
   }
 
   return (
-    <section className="surface">
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">Add Topic</p>
-          <h2>탐색 주제 추가</h2>
-        </div>
-      </div>
+    <div className="embedded-form">
       <form className="form-grid" onSubmit={handleSubmit}>
         <label>
           <span>제목</span>
@@ -1279,7 +1527,7 @@ function ResearchForm({ onAddResearch }: { onAddResearch: (item: Omit<ResearchIt
           </button>
         </div>
       </form>
-    </section>
+    </div>
   );
 }
 
@@ -1457,18 +1705,12 @@ function BrandCandidateGrid({ items }: { items: BrandCandidate[] }) {
 
 function VendorComparisonSection({ snapshot }: { snapshot: VendorSnapshot | null }) {
   return (
-    <section className="surface">
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">Vendor Watch</p>
-          <h2>업체별 판매/가격 비교</h2>
-        </div>
-        <ShoppingCart size={24} />
-      </div>
-      <p className="muted block-copy">
-        가격은 공식몰·외부몰·쿠폰·배송비에 따라 계속 바뀝니다. 아래는 현재 앱이 추적하는 기준값과 자동 감지 스냅샷입니다.
-      </p>
-
+    <CollapsibleSection
+      eyebrow="Vendor Watch"
+      title="업체별 판매/가격 비교"
+      icon={ShoppingCart}
+      intro="가격은 공식몰·외부몰·쿠폰·배송비에 따라 계속 바뀝니다. 아래는 현재 앱이 추적하는 기준값과 자동 감지 스냅샷입니다."
+    >
       <div className="cost-band">
         <div>
           <span>초기 맛보기</span>
@@ -1493,7 +1735,7 @@ function VendorComparisonSection({ snapshot }: { snapshot: VendorSnapshot | null
           return <VendorComparisonCard key={vendor.id} vendor={vendor} snapshot={live} />;
         })}
       </div>
-    </section>
+    </CollapsibleSection>
   );
 }
 
@@ -1505,88 +1747,91 @@ function VendorComparisonCard({
   snapshot?: VendorSnapshot["vendors"][number];
 }) {
   return (
-    <article className="vendor-card">
-      <div className="vendor-card-head">
+    <details className="vendor-card">
+      <summary className="vendor-card-head">
         <div>
           <strong>{vendor.name}</strong>
-          <a href={vendor.homepage} target="_blank" rel="noreferrer">
-            <ExternalLink size={15} />
-            공식몰
-          </a>
         </div>
         <span className={`status-chip ${snapshot?.status === "error" ? "rose" : "stocked"}`}>
           {snapshot ? `자동확인 ${new Date(snapshot.checkedAt).toLocaleDateString("ko-KR")}` : "수동 기준"}
         </span>
-      </div>
+        <ChevronDown className="summary-chevron" size={18} />
+      </summary>
 
-      <div className="vendor-columns">
-        <div>
-          <span className="mini-label">판매 리스트</span>
-          <ul>
-            {vendor.productList.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
+      <div className="vendor-card-body">
+        <div className="vendor-note">
+          <strong>{vendor.monthlyEstimate}</strong>
+          <p>{vendor.promoSignal}</p>
+          <a href={vendor.homepage} target="_blank" rel="noreferrer">
+            <ExternalLink size={15} />
+            공식몰 열기
+          </a>
         </div>
-        <div>
-          <span className="mini-label">가격 예시</span>
-          <ul>
-            {vendor.priceExamples.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      </div>
 
-      <div className="vendor-note">
-        <strong>{vendor.monthlyEstimate}</strong>
-        <p>{vendor.promoSignal}</p>
-      </div>
-
-      <div className="vendor-columns">
-        <div>
-          <span className="mini-label">장점</span>
-          <ul>
-            {vendor.strengths.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
+        <div className="vendor-columns">
+          <div>
+            <span className="mini-label">판매 리스트</span>
+            <ul>
+              {vendor.productList.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <span className="mini-label">가격 예시</span>
+            <ul>
+              {vendor.priceExamples.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
         </div>
-        <div>
-          <span className="mini-label">주의점</span>
-          <ul>
-            {vendor.watchouts.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      </div>
 
-      <div className="snapshot-box">
-        <span className="mini-label">자동 감지 결과</span>
-        {snapshot?.status === "error" ? (
-          <p>{snapshot.error ?? "수집 실패"}</p>
-        ) : (
-          <>
-            <p>{vendor.crawlNote}</p>
-            <div className="snippet-grid">
-              <div>
-                <strong>가격</strong>
-                {(snapshot?.priceSnippets.length ? snapshot.priceSnippets : vendor.priceExamples).slice(0, 3).map((item) => (
-                  <small key={item}>{item}</small>
-                ))}
+        <div className="vendor-columns">
+          <div>
+            <span className="mini-label">장점</span>
+            <ul>
+              {vendor.strengths.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <span className="mini-label">주의점</span>
+            <ul>
+              {vendor.watchouts.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="snapshot-box">
+          <span className="mini-label">자동 감지 결과</span>
+          {snapshot?.status === "error" ? (
+            <p>{snapshot.error ?? "수집 실패"}</p>
+          ) : (
+            <>
+              <p>{vendor.crawlNote}</p>
+              <div className="snippet-grid">
+                <div>
+                  <strong>가격</strong>
+                  {(snapshot?.priceSnippets.length ? snapshot.priceSnippets : vendor.priceExamples).slice(0, 3).map((item) => (
+                    <small key={item}>{item}</small>
+                  ))}
+                </div>
+                <div>
+                  <strong>이벤트</strong>
+                  {(snapshot?.promoSnippets.length ? snapshot.promoSnippets : [vendor.promoSignal]).slice(0, 3).map((item) => (
+                    <small key={item}>{item}</small>
+                  ))}
+                </div>
               </div>
-              <div>
-                <strong>이벤트</strong>
-                {(snapshot?.promoSnippets.length ? snapshot.promoSnippets : [vendor.promoSignal]).slice(0, 3).map((item) => (
-                  <small key={item}>{item}</small>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </div>
       </div>
-    </article>
+    </details>
   );
 }
 
