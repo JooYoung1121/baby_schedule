@@ -36,6 +36,7 @@ import {
   monthGuides,
   readinessItems,
   solidGuideCards,
+  vendorComparisons,
 } from "./data";
 import { loadState, normalizeState, saveState } from "./storage";
 import type {
@@ -54,6 +55,8 @@ import type {
   SleepQuality,
   SupplyItem,
   SupplyStatus,
+  VendorComparison,
+  VendorSnapshot,
 } from "./types";
 import {
   addDays,
@@ -172,6 +175,7 @@ function App() {
   const [selectedDate, setSelectedDate] = useState(toDateInputValue(new Date()));
   const [quickType, setQuickType] = useState<ActivityType | null>(null);
   const [toast, setToast] = useState("");
+  const [vendorSnapshot, setVendorSnapshot] = useState<VendorSnapshot | null>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -183,6 +187,25 @@ function App() {
     const timeout = window.setTimeout(() => setToast(""), 2600);
     return () => window.clearTimeout(timeout);
   }, [toast]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${import.meta.env.BASE_URL}vendor-snapshot.json?ts=${Date.now()}`)
+      .then((response) => (response.ok ? response.json() : null))
+      .then((snapshot: VendorSnapshot | null) => {
+        if (!cancelled && snapshot?.vendors) {
+          setVendorSnapshot(snapshot);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setVendorSnapshot(null);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const age = useMemo(() => getBabyAge(state.profile.birthDate), [state.profile.birthDate]);
   const dayEntries = useMemo(
@@ -384,6 +407,7 @@ function App() {
               updateState={updateState}
               addFood={addFood}
               deleteFood={deleteFood}
+              vendorSnapshot={vendorSnapshot}
             />
           )}
 
@@ -710,11 +734,13 @@ function FoodsView({
   updateState,
   addFood,
   deleteFood,
+  vendorSnapshot,
 }: {
   state: BabyState;
   updateState: (updater: (previous: BabyState) => BabyState) => void;
   addFood: (food: Omit<FoodTrial, "id">) => void;
   deleteFood: (id: string) => void;
+  vendorSnapshot: VendorSnapshot | null;
 }) {
   return (
     <div className="stack">
@@ -786,6 +812,8 @@ function FoodsView({
         </p>
         <BrandCandidateGrid items={babyFoodBrandCandidates} />
       </section>
+
+      <VendorComparisonSection snapshot={vendorSnapshot} />
 
       <FoodForm onAddFood={addFood} />
 
@@ -1424,6 +1452,141 @@ function BrandCandidateGrid({ items }: { items: BrandCandidate[] }) {
         </article>
       ))}
     </div>
+  );
+}
+
+function VendorComparisonSection({ snapshot }: { snapshot: VendorSnapshot | null }) {
+  return (
+    <section className="surface">
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">Vendor Watch</p>
+          <h2>업체별 판매/가격 비교</h2>
+        </div>
+        <ShoppingCart size={24} />
+      </div>
+      <p className="muted block-copy">
+        가격은 공식몰·외부몰·쿠폰·배송비에 따라 계속 바뀝니다. 아래는 현재 앱이 추적하는 기준값과 자동 감지 스냅샷입니다.
+      </p>
+
+      <div className="cost-band">
+        <div>
+          <span>초기 맛보기</span>
+          <strong>월 5만-12만원</strong>
+          <p>직접 조리 중심, 체험팩/단품 보조</p>
+        </div>
+        <div>
+          <span>하루 1팩</span>
+          <strong>월 9만-26만원</strong>
+          <p>단가 3,000-8,700원 가정</p>
+        </div>
+        <div>
+          <span>하루 2팩 이상</span>
+          <strong>월 18만-50만원+</strong>
+          <p>정기배송·패키지 할인 여부가 중요</p>
+        </div>
+      </div>
+
+      <div className="vendor-list">
+        {vendorComparisons.map((vendor) => {
+          const live = snapshot?.vendors.find((item) => item.id === vendor.id);
+          return <VendorComparisonCard key={vendor.id} vendor={vendor} snapshot={live} />;
+        })}
+      </div>
+    </section>
+  );
+}
+
+function VendorComparisonCard({
+  vendor,
+  snapshot,
+}: {
+  vendor: VendorComparison;
+  snapshot?: VendorSnapshot["vendors"][number];
+}) {
+  return (
+    <article className="vendor-card">
+      <div className="vendor-card-head">
+        <div>
+          <strong>{vendor.name}</strong>
+          <a href={vendor.homepage} target="_blank" rel="noreferrer">
+            <ExternalLink size={15} />
+            공식몰
+          </a>
+        </div>
+        <span className={`status-chip ${snapshot?.status === "error" ? "rose" : "stocked"}`}>
+          {snapshot ? `자동확인 ${new Date(snapshot.checkedAt).toLocaleDateString("ko-KR")}` : "수동 기준"}
+        </span>
+      </div>
+
+      <div className="vendor-columns">
+        <div>
+          <span className="mini-label">판매 리스트</span>
+          <ul>
+            {vendor.productList.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <span className="mini-label">가격 예시</span>
+          <ul>
+            {vendor.priceExamples.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div className="vendor-note">
+        <strong>{vendor.monthlyEstimate}</strong>
+        <p>{vendor.promoSignal}</p>
+      </div>
+
+      <div className="vendor-columns">
+        <div>
+          <span className="mini-label">장점</span>
+          <ul>
+            {vendor.strengths.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <span className="mini-label">주의점</span>
+          <ul>
+            {vendor.watchouts.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div className="snapshot-box">
+        <span className="mini-label">자동 감지 결과</span>
+        {snapshot?.status === "error" ? (
+          <p>{snapshot.error ?? "수집 실패"}</p>
+        ) : (
+          <>
+            <p>{vendor.crawlNote}</p>
+            <div className="snippet-grid">
+              <div>
+                <strong>가격</strong>
+                {(snapshot?.priceSnippets.length ? snapshot.priceSnippets : vendor.priceExamples).slice(0, 3).map((item) => (
+                  <small key={item}>{item}</small>
+                ))}
+              </div>
+              <div>
+                <strong>이벤트</strong>
+                {(snapshot?.promoSnippets.length ? snapshot.promoSnippets : [vendor.promoSignal]).slice(0, 3).map((item) => (
+                  <small key={item}>{item}</small>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </article>
   );
 }
 

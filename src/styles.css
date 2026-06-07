@@ -732,6 +732,134 @@ textarea:focus {
   padding: 0 11px;
 }
 
+.cost-band {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.cost-band div,
+.vendor-card,
+.snapshot-box {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdf9;
+}
+
+.cost-band div {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+}
+
+.cost-band span,
+.mini-label {
+  color: var(--rose-strong);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.cost-band strong {
+  font-size: 1.18rem;
+}
+
+.cost-band p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.vendor-list {
+  display: grid;
+  gap: 14px;
+}
+
+.vendor-card {
+  display: grid;
+  gap: 14px;
+  padding: 15px;
+}
+
+.vendor-card-head,
+.vendor-card-head > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vendor-card-head {
+  justify-content: space-between;
+}
+
+.vendor-card-head strong {
+  font-size: 1.1rem;
+}
+
+.vendor-card-head a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 900;
+}
+
+.vendor-columns,
+.snippet-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.vendor-columns > div {
+  min-width: 0;
+}
+
+.vendor-columns ul {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.vendor-note {
+  border-radius: 8px;
+  background: #f5efe8;
+  padding: 12px;
+}
+
+.vendor-note p,
+.snapshot-box p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.snapshot-box {
+  padding: 12px;
+}
+
+.snippet-grid {
+  margin-top: 10px;
+}
+
+.snippet-grid div {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  min-width: 0;
+}
+
+.snippet-grid small {
+  display: block;
+  border-radius: 8px;
+  background: #f5efe8;
+  color: #6a5d55;
+  padding: 8px 9px;
+  line-height: 1.45;
+}
+
 .deploy-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -909,6 +1037,9 @@ textarea:focus {
   .curation-grid,
   .candidate-grid,
   .brand-grid,
+  .cost-band,
+  .vendor-columns,
+  .snippet-grid,
   .check-grid,
   .deploy-grid,
   .form-grid {

@@ -1,0 +1,42 @@
+name: Refresh Vendor Snapshot
+
+on:
+  schedule:
+    - cron: "37 21 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Refresh vendor snapshot
+        run: npm run scrape:vendors
+
+      - name: Commit snapshot if changed
+        run: |
+          if git diff --quiet -- public/vendor-snapshot.json; then
+            echo "No vendor snapshot changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/vendor-snapshot.json
+          git commit -m "Refresh vendor price snapshot"
+          git push

@@ -94,6 +94,38 @@ export interface BrandCandidate {
   url: string;
 }
 
+export interface VendorComparison {
+  id: string;
+  name: string;
+  homepage: string;
+  productList: string[];
+  priceExamples: string[];
+  monthlyEstimate: string;
+  strengths: string[];
+  watchouts: string[];
+  promoSignal: string;
+  crawlNote: string;
+  sourceLabel: string;
+  url: string;
+}
+
+export interface VendorSnapshotItem {
+  id: string;
+  name: string;
+  url: string;
+  checkedAt: string;
+  status: "ok" | "error";
+  title?: string;
+  priceSnippets: string[];
+  promoSnippets: string[];
+  error?: string;
+}
+
+export interface VendorSnapshot {
+  generatedAt: string;
+  vendors: VendorSnapshotItem[];
+}
+
 export interface BabyState {
   profile: BabyProfile;
   schedule: ScheduleEntry[];

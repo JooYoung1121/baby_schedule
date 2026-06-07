@@ -1,4 +1,12 @@
-import type { BabyState, BrandCandidate, CuratedCard, FoodCandidate, ResearchItem, SupplyItem } from "./types";
+import type {
+  BabyState,
+  BrandCandidate,
+  CuratedCard,
+  FoodCandidate,
+  ResearchItem,
+  SupplyItem,
+  VendorComparison,
+} from "./types";
 
 const today = new Date();
 
@@ -149,6 +157,79 @@ export const babyFoodBrandCandidates: BrandCandidate[] = [
     check: "현재 판매 단계, 배송 가능 지역, 원재료 인증 표시가 최신인지 공식몰에서 한 번 더 확인합니다.",
     sourceLabel: "머니투데이 보도",
     url: "https://www.mt.co.kr/future/2021/03/09/2021030912521593342",
+  },
+];
+
+export const vendorComparisons: VendorComparison[] = [
+  {
+    id: "bebecook",
+    name: "베베쿡",
+    homepage: "https://www.bebecook.com/",
+    productList: ["초기1 4-5M 140g", "초기1.5/초기2 5-6M", "중기/후기/완료기", "오트 이유식", "한우·생선 토핑", "단품SET"],
+    priceExamples: ["초기1 단품SET 1팩 140g 8,700원 예시", "초기1.5 한우미음 7세트 72,800원 예시", "2025년 이유식 전 단계 팩당 100-200원 인상 보도"],
+    monthlyEstimate: "1일 1팩 기준 약 13만-26만원대, 2팩 이상은 25만-50만원대까지 열어두고 계산",
+    strengths: ["단계와 식단 매니저가 세분화", "안심배송/정기배송 운영", "초기부터 토핑·오트 등 확장 선택지가 많음"],
+    watchouts: ["지역별 배송 유형 확인 필요", "행사/패키지 여부에 따라 체감 단가 차이가 큼", "일부 가격은 앱/로그인/식단 선택 후 확인되는 경우가 있음"],
+    promoSignal: "첫주문, 단품SET, 쿠폰, 등급 혜택, V특가 문구 감지",
+    crawlNote: "공식 페이지가 Vue 템플릿/API 기반이라 HTML만 긁으면 일부 가격이 템플릿으로 남을 수 있음",
+    sourceLabel: "베베쿡 공식/뉴시스",
+    url: "https://www.bebecook.com/page/exhibition/131?_bannerId=11005",
+  },
+  {
+    id: "sangol",
+    name: "산골이유식",
+    homepage: "https://www.ecomommeal.co.kr/",
+    productList: ["준비기", "초기 150g", "중기 150g", "후기/완료기 200g", "반찬/국", "정기배송"],
+    priceExamples: ["SSG 6일분 정기배송 최적가 38,000원~ 예시", "카드혜택가 35,340원 예시", "초기 150g, 후기/완료기 200g 상품 정보"],
+    monthlyEstimate: "6일분 38,000원 예시 기준 월 19만원 전후, 카드/쿠폰 적용 시 변동",
+    strengths: ["지리산/로컬 식재료 스토리가 강함", "정기배송 단위가 명확", "초기부터 후기까지 중량 정보가 비교적 선명"],
+    watchouts: ["공식몰·백화점·SSG·컬리 등 판매 채널별 가격 차이", "배송/소비기한과 냉장 보관 여유 확인 필요", "현재 공식몰 상세 가격은 동적 노출 가능"],
+    promoSignal: "정기배송, 카드혜택, 청구할인, 행사 문구 감지",
+    crawlNote: "공식몰과 입점몰을 함께 봐야 실제 최저가에 가까워짐",
+    sourceLabel: "SSG 산골이유식 상품",
+    url: "https://www.ssg.com/item/itemView.ssg?itemId=1000552209224",
+  },
+  {
+    id: "jjangjuk",
+    name: "짱죽",
+    homepage: "https://www.jjangjuk.com/",
+    productList: ["초기 미음 5M부터", "초기 묽은죽 7M부터", "중기/후기/완료기", "2팩 체험팩", "냉장&실온 이유식", "간식/김/음료"],
+    priceExamples: ["신규몰 이유식 1,900원~ 문구", "초기 미음 시작세트 14,000원 / 30,000원 예시", "기획전 할인 최대 62% 문구"],
+    monthlyEstimate: "행사 단가 1,900-4,400원대 예시 기준 월 6만-26만원대까지 폭이 큼",
+    strengths: ["체험팩과 시작세트가 눈에 잘 띔", "냉장/실온 선택지가 있음", "이벤트 문구가 HTML에 잘 잡혀 자동 감지에 유리"],
+    watchouts: ["행사 단가와 정상가 차이가 큼", "초기 미음/묽은죽 월령 차이 확인 필요", "옵션별 중량과 배송비를 같이 봐야 함"],
+    promoSignal: "신규몰, 1,900원~, 최대 62%, 체험팩, 시작세트 문구 감지",
+    crawlNote: "모바일 페이지에서 이벤트/기획전 문구가 비교적 잘 노출됨",
+    sourceLabel: "짱죽 공식",
+    url: "https://www.jjangjuk.com/?device=mobile",
+  },
+  {
+    id: "alvins",
+    name: "엘빈즈",
+    homepage: "https://www.alvins.co.kr/",
+    productList: ["이유식", "이지밀 이유식(실온)", "반찬/국/볶음밥", "간식/김/음료", "유산균/분유", "유아용품"],
+    priceExamples: ["공식몰 카테고리 확인 필요", "외부 최저가 예시로 초기1 140g 2,660원 노출 사례", "쿠팡/SSG/핫딜 채널 변동 폭 큼"],
+    monthlyEstimate: "외부몰 단품 2,600-4,800원 예시 기준 월 8만-29만원대",
+    strengths: ["공식몰과 외부몰 접근성이 좋음", "실온/냉장 선택지가 있음", "쿠팡·핫딜 가격 비교에 적합"],
+    watchouts: ["공식몰 가격이 동적으로 로드될 수 있음", "외부몰 가격은 배송비/쿠폰/판매자 조건 확인 필요", "상품 라인 리뉴얼 공지 확인 필요"],
+    promoSignal: "설맞이, 할인, 공식몰 공지, 외부 핫딜 문구 감지",
+    crawlNote: "공식몰 단독보다 쿠팡/SSG/핫딜 보조 데이터가 유용할 가능성이 큼",
+    sourceLabel: "엘빈즈 공식몰",
+    url: "https://www.alvins.co.kr/category/%EC%B4%88%EA%B8%B01-%284~5%EA%B0%9C%EC%9B%94%29/48/",
+  },
+  {
+    id: "lusol",
+    name: "루솔",
+    homepage: "https://www.lusol.co.kr/",
+    productList: ["더프라임 이유식", "냉장 이유식", "실온 이유식/퓨레", "반찬/볶음밥", "영양죽", "스페셜 패키지"],
+    priceExamples: ["공식몰 가격 확인 필요", "로켓프레시/외부몰에서 3,000원대 단품 노출 사례", "패키지·회원 혜택 변동 가능"],
+    monthlyEstimate: "단품 3,000-5,000원대 가정 시 월 9만-30만원대",
+    strengths: ["냉장/실온/퓨레/반찬까지 라인업이 넓음", "영양사 이유식 가이드 콘텐츠가 있음", "외부몰 가격 비교가 쉬운 편"],
+    watchouts: ["공식몰·외부몰 가격 차이", "정기배송보다 단품/패키지 조건 확인 필요", "라인업이 넓어 월령 필터가 중요"],
+    promoSignal: "스페셜 패키지, 합리적인 가격, 클래스/가이드 문구 감지",
+    crawlNote: "공식몰 메인에서 카테고리와 프로모션 문구를 먼저 추적하고 상세 상품은 별도 타깃 필요",
+    sourceLabel: "루솔 공식몰",
+    url: "https://www.lusol.co.kr/",
   },
 ];
 
