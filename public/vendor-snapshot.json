@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-08-07T22:07:47.441Z",
+  "generatedAt": "2026-08-08T21:57:24.544Z",
   "vendors": [
     {
       "id": "bebecook",
       "name": "베베쿡",
       "url": "https://www.bebecook.com/page/exhibition/131?_bannerId=11005",
-      "checkedAt": "2026-08-07T22:07:47.441Z",
+      "checkedAt": "2026-08-08T21:57:24.544Z",
       "status": "ok",
       "title": "베베쿡 최초! 이유식 영양식 전 단계 단품SET 출시 | 베베쿡",
       "priceSnippets": [],
@@ -21,7 +21,7 @@
       "id": "sangol",
       "name": "산골이유식",
       "url": "https://www.ssg.com/item/itemView.ssg?itemId=1000552209224",
-      "checkedAt": "2026-08-07T22:07:47.480Z",
+      "checkedAt": "2026-08-08T21:57:24.589Z",
       "status": "error",
       "priceSnippets": [],
       "promoSnippets": [],
@@ -31,7 +31,7 @@
       "id": "jjangjuk",
       "name": "짱죽",
       "url": "https://www.jjangjuk.com/?device=mobile",
-      "checkedAt": "2026-08-07T22:07:47.481Z",
+      "checkedAt": "2026-08-08T21:57:24.591Z",
       "status": "ok",
       "title": "짱죽-정성이 가득한 짱죽!",
       "priceSnippets": [
@@ -59,7 +59,7 @@
       "id": "alvins",
       "name": "엘빈즈",
       "url": "https://www.alvins.co.kr/category/%EC%B4%88%EA%B8%B01-%284~5%EA%B0%9C%EC%9B%94%29/48/",
-      "checkedAt": "2026-08-07T22:07:47.482Z",
+      "checkedAt": "2026-08-08T21:57:24.592Z",
       "status": "ok",
       "title": "이유식 - 초기1 (4~5개월) - 엘빈즈",
       "priceSnippets": [
@@ -87,7 +87,7 @@
       "id": "lusol",
       "name": "루솔",
       "url": "https://www.lusol.co.kr/",
-      "checkedAt": "2026-08-07T22:07:47.484Z",
+      "checkedAt": "2026-08-08T21:57:24.593Z",
       "status": "ok",
       "title": "루솔 온가족 푸드솔루션",
       "priceSnippets": [
