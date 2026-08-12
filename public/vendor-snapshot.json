@@ -1,15 +1,17 @@
 {
-  "generatedAt": "2026-08-11T22:20:38.641Z",
+  "generatedAt": "2026-08-12T22:19:58.665Z",
   "vendors": [
     {
       "id": "bebecook",
       "name": "베베쿡",
       "url": "https://www.bebecook.com/page/exhibition/131?_bannerId=11005",
-      "checkedAt": "2026-08-11T22:20:38.642Z",
+      "checkedAt": "2026-08-12T22:19:58.665Z",
       "status": "ok",
       "title": "베베쿡 최초! 이유식 영양식 전 단계 단품SET 출시 | 베베쿡",
       "priceSnippets": [],
       "promoSnippets": [
+        "&베이커리 예비이유식 단품SET 기프트카드 유아식품 빼빼롱뻥 특가 (~8/13)★ 베베쿡x아이누리 출시★ 한정 특가★ 신제품 과자 배도라지 주스 차 실온이유식 간",
+        "빼빼롱뻥 특가 (~8/13)★ 베베쿡x아이누리 출시★ 한정 특가★ 신제품 과자 배도라지 주스 차 실온이유식 간편/반찬 냉동간편식 건강식품 DIY 온가족 영양푸드",
         "강식품 DIY 온가족 영양푸드 온리브 브랜드 스토리 ★첫구매 특가★ 데일리343 식사죽 별미죽 프로티얼 피쉬칩 스킨케어 라브리에 브랜드 스토리 첫 구매 전용♥ 보",
         "해주세요 로그인 상품권 등록 이유식 이용안내 회원가입 혜택 이벤트/혜택 주메뉴 단계별 주문하기 이유식 패키지 키즈식 패키지 초기 1 (4~5M) 초기 1.5 (5",
         "치하고 더 편하게 식단보기와 배송변경하세 요 BeBecook 기획전 뒤로가기 홈으로 검색하기 BEBECOOK 검색하기 닫기 반갑습니다! 로그인 해주세요 로그인 상품",
@@ -21,7 +23,7 @@
       "id": "sangol",
       "name": "산골이유식",
       "url": "https://www.ssg.com/item/itemView.ssg?itemId=1000552209224",
-      "checkedAt": "2026-08-11T22:20:38.681Z",
+      "checkedAt": "2026-08-12T22:19:58.704Z",
       "status": "error",
       "priceSnippets": [],
       "promoSnippets": [],
@@ -31,7 +33,7 @@
       "id": "jjangjuk",
       "name": "짱죽",
       "url": "https://www.jjangjuk.com/?device=mobile",
-      "checkedAt": "2026-08-11T22:20:38.683Z",
+      "checkedAt": "2026-08-12T22:19:58.706Z",
       "status": "ok",
       "title": "짱죽-정성이 가득한 짱죽!",
       "priceSnippets": [
@@ -59,7 +61,7 @@
       "id": "alvins",
       "name": "엘빈즈",
       "url": "https://www.alvins.co.kr/category/%EC%B4%88%EA%B8%B01-%284~5%EA%B0%9C%EC%9B%94%29/48/",
-      "checkedAt": "2026-08-11T22:20:38.684Z",
+      "checkedAt": "2026-08-12T22:19:58.707Z",
       "status": "ok",
       "title": "이유식 - 초기1 (4~5개월) - 엘빈즈",
       "priceSnippets": [
@@ -87,7 +89,7 @@
       "id": "lusol",
       "name": "루솔",
       "url": "https://www.lusol.co.kr/",
-      "checkedAt": "2026-08-11T22:20:38.685Z",
+      "checkedAt": "2026-08-12T22:19:58.708Z",
       "status": "ok",
       "title": "루솔 온가족 푸드솔루션",
       "priceSnippets": [
