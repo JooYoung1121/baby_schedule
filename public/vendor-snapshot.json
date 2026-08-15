@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-08-14T21:52:08.882Z",
+  "generatedAt": "2026-08-15T21:48:23.358Z",
   "vendors": [
     {
       "id": "bebecook",
       "name": "베베쿡",
       "url": "https://www.bebecook.com/page/exhibition/131?_bannerId=11005",
-      "checkedAt": "2026-08-14T21:52:08.882Z",
+      "checkedAt": "2026-08-15T21:48:23.358Z",
       "status": "ok",
       "title": "베베쿡 최초! 이유식 영양식 전 단계 단품SET 출시 | 베베쿡",
       "priceSnippets": [],
@@ -23,7 +23,7 @@
       "id": "sangol",
       "name": "산골이유식",
       "url": "https://www.ssg.com/item/itemView.ssg?itemId=1000552209224",
-      "checkedAt": "2026-08-14T21:52:08.910Z",
+      "checkedAt": "2026-08-15T21:48:23.432Z",
       "status": "error",
       "priceSnippets": [],
       "promoSnippets": [],
@@ -33,7 +33,7 @@
       "id": "jjangjuk",
       "name": "짱죽",
       "url": "https://www.jjangjuk.com/?device=mobile",
-      "checkedAt": "2026-08-14T21:52:08.911Z",
+      "checkedAt": "2026-08-15T21:48:23.434Z",
       "status": "ok",
       "title": "짱죽-정성이 가득한 짱죽!",
       "priceSnippets": [
@@ -61,7 +61,7 @@
       "id": "alvins",
       "name": "엘빈즈",
       "url": "https://www.alvins.co.kr/category/%EC%B4%88%EA%B8%B01-%284~5%EA%B0%9C%EC%9B%94%29/48/",
-      "checkedAt": "2026-08-14T21:52:08.912Z",
+      "checkedAt": "2026-08-15T21:48:23.435Z",
       "status": "ok",
       "title": "이유식 - 초기1 (4~5개월) - 엘빈즈",
       "priceSnippets": [
@@ -89,11 +89,17 @@
       "id": "lusol",
       "name": "루솔",
       "url": "https://www.lusol.co.kr/",
-      "checkedAt": "2026-08-14T21:52:08.913Z",
-      "status": "error",
-      "priceSnippets": [],
-      "promoSnippets": [],
-      "error": "fetch failed"
+      "checkedAt": "2026-08-15T21:48:23.436Z",
+      "status": "ok",
+      "title": "루솔 온가족 푸드솔루션",
+      "priceSnippets": [
+        "▶ APP 다운로드 후 스페셜 쿠폰 받고 더 편하게 둘러보세요 앱 다운 시 1,000원 할인 쿠폰 발급 가능 안드로이드 다운로드 IOS 다운로드 더 많은 멤버십"
+      ],
+      "promoSnippets": [
+        "셜 쿠폰 받고 더 편하게 둘러보세요 앱 다운 시 1,000원 할인 쿠폰 발급 가능 안드로이드 다운로드 IOS 다운로드 더 많은 멤버십 혜택보기 ＞ PC버전 장바구",
+        "기 가까운 루솔 매장 찾기 ◀ ▶ APP 다운로드 후 스페셜 쿠폰 받고 더 편하게 둘러보세요 앱 다운 시 1,000원 할인 쿠폰 발급 가능 안드로이드 다운로드 I",
+        "폰 받고 더 편하게 둘러보세요 앱 다운 시 1,000원 할인 쿠폰 발급 가능 안드로이드 다운로드 IOS 다운로드 더 많은 멤버십 혜택보기 ＞ PC버전 장바구니 가"
+      ]
     }
   ]
 }
